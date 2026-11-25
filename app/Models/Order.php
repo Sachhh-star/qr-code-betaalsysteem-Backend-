@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+
+#[Fillable(['restaurant_table_id', 'status', 'total_price'])]
 
 class Order extends Model
 {
