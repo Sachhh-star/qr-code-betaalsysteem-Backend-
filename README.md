@@ -281,6 +281,23 @@ Het volledige ontwerp staat in [`docs/erd.md`](docs/erd.md) en [`docs/ERD-datamo
 
 ---
 
+### Stap 11 – Seeder voor categorieën (25 november)
+**Gedaan**
+- Seeder gemaakt met `php artisan make:seeder CategorySeeder`.
+- Een lijst met **naam => volgorde**: Voorgerecht (1), Hoofdgerecht (2), Nagerecht (3), Drinken (4).
+- Met `foreach ($categories as $name => $order)` en `Category::firstOrCreate(['name' => $name], ['sort_order' => $order])`.
+
+**Getest**
+- `php artisan db:seed --class=CategorySeeder` → `DONE`. ✅
+- In phpMyAdmin (`categories` → Browse) staan 4 categorieën. ✅
+- `Hoofdgerecht` bestond al (uit de Tinker-test van stap 8). `firstOrCreate` heeft hem **gevonden** en geen tweede gemaakt. ✅ Daarom heeft deze nog `sort_order = 0`. Dit lossen we op door de database straks schoon op te bouwen.
+
+**Waarom zo?**
+- `firstOrCreate` heeft twee delen: het **eerste deel** gebruikt hij om te **zoeken**, het **tweede deel** vult hij alleen in als hij een **nieuwe** rij maakt.
+- We zoeken op `name`, omdat die kolom **uniek** is. Op `sort_order` zoeken kan niet, want twee categorieën kunnen hetzelfde volgnummer hebben.
+
+---
+
 ## Git-geschiedenis
 
 | Datum | Commit |
@@ -293,6 +310,7 @@ Het volledige ontwerp staat in [`docs/erd.md`](docs/erd.md) en [`docs/ERD-datamo
 | 25-11 | Rol-kolom toegevoegd aan users |
 | 25-11 | Relaties tussen models toegevoegd |
 | 25-11 | Fillable in models, README en ERD-documenten |
+| 25-11 | Seeder voor de 14 allergenen |
 
 ---
 
@@ -300,7 +318,8 @@ Het volledige ontwerp staat in [`docs/erd.md`](docs/erd.md) en [`docs/ERD-datamo
 
 - [x] `Fillable` in alle models
 - [x] Seeder voor de 14 allergenen
-- [ ] Seeders voor categorieën, tafels en gerechten
+- [x] Seeder voor categorieën
+- [ ] Seeders voor tafels en gerechten
 - [ ] API-routes en controllers (JSON) – afspreken met Salam
 - [ ] Validatie van invoer
 - [ ] Inloggen voor personeel (Laravel Sanctum) en rechten per rol
