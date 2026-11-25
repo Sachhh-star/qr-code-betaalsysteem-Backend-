@@ -298,6 +298,25 @@ Het volledige ontwerp staat in [`docs/erd.md`](docs/erd.md) en [`docs/ERD-datamo
 
 ---
 
+### Stap 12 – Seeder voor tafels (25 november)
+**Gedaan**
+- Seeder gemaakt met `php artisan make:seeder RestaurantTableSeeder`.
+- Met een `for`-lus van 1 tot en met 10 worden **10 tafels** gemaakt.
+- Elke tafel krijgt een willekeurige `qr_token` van 32 tekens met `Str::random(32)`.
+- `RestaurantTable::firstOrCreate(['number' => $i], ['qr_token' => Str::random(32)])`.
+
+**Getest**
+- `php artisan db:seed --class=RestaurantTableSeeder` → `DONE`. ✅
+- In de database: **10 tafels** (nummer 1 t/m 10), **10 verschillende** tokens van 32 tekens, en alle tafels actief (`is_active = 1`). ✅
+- De seeder een **tweede keer** uitgevoerd → `DONE`, nog steeds 10 tafels, en de token van tafel 1 is **niet veranderd**. ✅
+
+**Waarom zo?**
+- We zoeken op `number` (uniek en vast). De `qr_token` staat in het tweede deel, zodat hij alleen bij het **maken** van een tafel wordt bedacht.
+- De `qr_token` blijft daarna **altijd hetzelfde**, ook als er nieuwe gasten aan de tafel komen. De QR-code wordt namelijk als sticker op de tafel geplakt. Elke gast maakt wel een **nieuwe bestelling** (`orders`) die bij die tafel hoort.
+- Een willekeurige token is veiliger dan alleen het tafelnummer: niemand kan raden welke link bij een andere tafel hoort.
+
+---
+
 ## Git-geschiedenis
 
 | Datum | Commit |
@@ -311,6 +330,7 @@ Het volledige ontwerp staat in [`docs/erd.md`](docs/erd.md) en [`docs/ERD-datamo
 | 25-11 | Relaties tussen models toegevoegd |
 | 25-11 | Fillable in models, README en ERD-documenten |
 | 25-11 | Seeder voor de 14 allergenen |
+| 25-11 | Seeder voor categorieën |
 
 ---
 
@@ -319,7 +339,9 @@ Het volledige ontwerp staat in [`docs/erd.md`](docs/erd.md) en [`docs/ERD-datamo
 - [x] `Fillable` in alle models
 - [x] Seeder voor de 14 allergenen
 - [x] Seeder voor categorieën
-- [ ] Seeders voor tafels en gerechten
+- [x] Seeder voor tafels
+- [ ] Seeder voor gerechten (met allergenen)
+- [ ] Alle seeders samen in `DatabaseSeeder` en database schoon opbouwen
 - [ ] API-routes en controllers (JSON) – afspreken met Salam
 - [ ] Validatie van invoer
 - [ ] Inloggen voor personeel (Laravel Sanctum) en rechten per rol
