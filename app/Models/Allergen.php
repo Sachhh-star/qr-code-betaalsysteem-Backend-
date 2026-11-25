@@ -6,5 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Allergen extends Model
 {
+    public function dishes(){
+        return $this->belongsToMany(Dish::class);
+    }
     //
 }
