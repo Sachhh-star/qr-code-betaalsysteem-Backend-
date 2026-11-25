@@ -260,6 +260,27 @@ Het volledige ontwerp staat in [`docs/erd.md`](docs/erd.md) en [`docs/ERD-datamo
 
 ---
 
+### Stap 10 – Seeder voor allergenen (25 november)
+**Gedaan**
+- Seeder gemaakt met `php artisan make:seeder AllergenSeeder`.
+- In `run()` een lijst met de **14 allergenen** die in de EU verplicht zijn: Gluten, Schaaldieren, Eieren, Vis, Pinda's, Soja, Melk, Noten, Selderij, Mosterd, Sesamzaad, Sulfiet, Lupine en Weekdieren.
+- Met een `foreach`-lus wordt voor elke naam één allergeen gemaakt met `Allergen::create(['name' => $name])`.
+
+**Getest**
+- `php artisan db:seed --class=AllergenSeeder` → `DONE`. ✅
+- In de database gecontroleerd: er staan precies **14** allergenen in de tabel. ✅
+- De seeder een **tweede keer** uitgevoerd → foutmelding `Duplicate entry 'Gluten' for key 'allergens_name_unique'`. ✅ Dit bewijst dat de `unique()`-regel uit de migration werkt: hetzelfde allergeen kan nooit twee keer bestaan.
+- Daarna `create` vervangen door **`firstOrCreate`** en de seeder opnieuw uitgevoerd → `DONE` zonder foutmelding, en nog steeds precies **14** allergenen (geen dubbele). ✅
+
+**Waarom `firstOrCreate`?**
+- `firstOrCreate` zoekt eerst of het allergeen al bestaat. Bestaat het al, dan doet hij niets. Zo kan iedereen in het team de seeder veilig meerdere keren uitvoeren.
+
+**Waarom zo?**
+- Met een seeder krijgt iedereen in het team (ook Salam voor de frontend) met één commando **dezelfde testgegevens**.
+- Een seeder vult de database **één keer** bij het opzetten van het project. De app zelf leest de gegevens daarna alleen uit de database.
+
+---
+
 ## Git-geschiedenis
 
 | Datum | Commit |
@@ -278,7 +299,8 @@ Het volledige ontwerp staat in [`docs/erd.md`](docs/erd.md) en [`docs/ERD-datamo
 ## Nog te doen
 
 - [x] `Fillable` in alle models
-- [ ] Seeders met testdata (tafels, categorieën, gerechten, 14 allergenen)
+- [x] Seeder voor de 14 allergenen
+- [ ] Seeders voor categorieën, tafels en gerechten
 - [ ] API-routes en controllers (JSON) – afspreken met Salam
 - [ ] Validatie van invoer
 - [ ] Inloggen voor personeel (Laravel Sanctum) en rechten per rol
