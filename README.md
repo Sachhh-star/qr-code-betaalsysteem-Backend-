@@ -4,7 +4,7 @@
 
 Gasten scannen de QR-code op hun tafel, bekijken de menukaart met allergenen, bestellen en betalen op hun eigen telefoon. De keuken ziet nieuwe bestellingen direct op een eigen scherm.
 
-Dit is de **backend**: een REST API in Laravel die JSON terugstuurt naar de Angular-frontend.
+Dit is de **backend**: een REST API in Laravel die JSON terugstuurt naar de React-frontend.
 
 ---
 
@@ -12,10 +12,12 @@ Dit is de **backend**: een REST API in Laravel die JSON terugstuurt naar de Angu
 
 | Naam | Rol |
 |---|---|
-| **Beam** | Projectleider, backend en database, documentatie, Git-beheer |
-| **Salam** | Frontend (Angular), mockups |
+| **Beam** | Projectleider, backend en database, documentatie, Git-beheer, mockups mobiel |
+| **Safa** | Frontend (React), planning, mockups website |
 | **Luoxi** | ERD / database-ontwerp |
 | **Marouf** | Tester |
+
+> Op 26 november heeft Salam de school verlaten. Safa heeft haar taken in de frontend overgenomen.
 
 ---
 
@@ -25,7 +27,7 @@ Dit is de **backend**: een REST API in Laravel die JSON terugstuurt naar de Angu
 |---|---|
 | Backend | Laravel 13 (PHP 8.3) |
 | Database | MySQL (via MAMP) |
-| Frontend | Angular (aparte repository) |
+| Frontend | React (aparte app en repository) |
 | Communicatie | REST API met JSON |
 | Testen | Pest |
 | Betalen | Mollie of Stripe (alleen testmodus) – nog te bouwen |
@@ -108,7 +110,7 @@ Het volledige ontwerp staat in [`docs/erd.md`](docs/erd.md) en [`docs/ERD-datamo
 ### Stap 1 – Laravel installeren (19 november)
 **Gedaan**
 - Laravel 13 geïnstalleerd met `laravel new backend`.
-- **Geen** starter kit gekozen, omdat de schermen in Angular worden gemaakt. De backend stuurt alleen JSON.
+- **Geen** starter kit gekozen, omdat de schermen in een **aparte frontend-app** worden gemaakt. De backend stuurt alleen JSON. (Eerst was Angular gekozen; op 26 november is het team overgestapt op React. Omdat de backend alleen JSON stuurt, hoefde daarvoor niets aan de backend te veranderen.)
 - Pest gekozen als testframework.
 
 **Getest**
@@ -276,7 +278,7 @@ Het volledige ontwerp staat in [`docs/erd.md`](docs/erd.md) en [`docs/ERD-datamo
 - `firstOrCreate` zoekt eerst of het allergeen al bestaat. Bestaat het al, dan doet hij niets. Zo kan iedereen in het team de seeder veilig meerdere keren uitvoeren.
 
 **Waarom zo?**
-- Met een seeder krijgt iedereen in het team (ook Salam voor de frontend) met één commando **dezelfde testgegevens**.
+- Met een seeder krijgt iedereen in het team (ook Safa voor de frontend) met één commando **dezelfde testgegevens**.
 - Een seeder vult de database **één keer** bij het opzetten van het project. De app zelf leest de gegevens daarna alleen uit de database.
 
 ---
@@ -317,6 +319,30 @@ Het volledige ontwerp staat in [`docs/erd.md`](docs/erd.md) en [`docs/ERD-datamo
 
 ---
 
+### Stap 13 – Seeder voor gerechten met allergenen (26 november)
+**Gedaan**
+- Seeder gemaakt met `php artisan make:seeder DishSeeder`.
+- Een lijst met **9 gerechten**. Per gerecht: naam, **naam** van de categorie, beschrijving, prijs en een lijst met allergenen.
+- In een `foreach`-lus per gerecht drie stappen:
+  1. De categorie zoeken op naam: `Category::where('name', ...)->first()`.
+  2. Het gerecht maken: `Dish::firstOrCreate(['name' => ...], ['category_id' => ..., 'description' => ..., 'price' => ...])`.
+  3. De allergenen koppelen: `Allergen::whereIn('name', [...])->pluck('id')` en daarna `$dish->allergens()->sync(...)`.
+
+**Getest**
+- `php artisan db:seed --class=DishSeeder` → zonder fouten. ✅
+- In de database: **9 gerechten**, elk met de juiste categorie. ✅
+- In de koppeltabel `allergen_dish`: **15 rijen**, precies het aantal allergenen uit de lijst. ✅
+- In Tinker: `Dish::where('name', 'Chocoladetaart')->first()->allergens->pluck('name')` → `Eieren, Gluten, Melk, Noten`. ✅
+- Fruitsalade en Cola hebben **geen** allergenen. ✅
+- Pizza Margherita bestond al uit de Tinker-test en is **niet dubbel** gemaakt. Wel heeft hij daardoor nog de oude prijs (€ 10,50 in plaats van € 12,50). Dit lossen we op door de database schoon op te bouwen.
+
+**Waarom zo?**
+- In de seeder staat de **naam** van de categorie en niet het `id`. Een `id` kan op elke computer anders zijn (bij Beam heeft "Voorgerecht" id 3, bij Safa misschien id 1). De naam is overal hetzelfde.
+- `where` zoekt op **één** waarde, `whereIn` zoekt op **meerdere** waarden tegelijk.
+- `sync` zorgt dat een gerecht **precies** de allergenen uit de lijst heeft: niet meer en niet minder.
+
+---
+
 ## Git-geschiedenis
 
 | Datum | Commit |
@@ -331,6 +357,7 @@ Het volledige ontwerp staat in [`docs/erd.md`](docs/erd.md) en [`docs/ERD-datamo
 | 25-11 | Fillable in models, README en ERD-documenten |
 | 25-11 | Seeder voor de 14 allergenen |
 | 25-11 | Seeder voor categorieën |
+| 25-11 | Seeder voor tafels |
 
 ---
 
@@ -340,9 +367,9 @@ Het volledige ontwerp staat in [`docs/erd.md`](docs/erd.md) en [`docs/ERD-datamo
 - [x] Seeder voor de 14 allergenen
 - [x] Seeder voor categorieën
 - [x] Seeder voor tafels
-- [ ] Seeder voor gerechten (met allergenen)
+- [x] Seeder voor gerechten (met allergenen)
 - [ ] Alle seeders samen in `DatabaseSeeder` en database schoon opbouwen
-- [ ] API-routes en controllers (JSON) – afspreken met Salam
+- [ ] API-routes en controllers (JSON) – afspreken met Safa
 - [ ] Validatie van invoer
 - [ ] Inloggen voor personeel (Laravel Sanctum) en rechten per rol
 - [ ] QR-code per tafel
