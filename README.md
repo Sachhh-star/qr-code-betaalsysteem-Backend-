@@ -68,10 +68,17 @@ Dit is de **backend**: een REST API in Laravel die JSON terugstuurt naar de Reac
    DB_USERNAME=root
    DB_PASSWORD=root
    ```
-6. Maak de tabellen aan (Laravel vraagt of het de database mag maken → **yes**):
+6. Maak de tabellen aan **en** vul ze met testgegevens (Laravel vraagt of het de database mag maken → **yes**):
    ```bash
-   php artisan migrate
+   php artisan migrate --seed
    ```
+   Je krijgt dan 14 allergenen, 4 categorieën, 10 tafels, 9 gerechten en 1 testgebruiker.
+
+   Wil je later de database helemaal **leeg maken en opnieuw opbouwen**?
+   ```bash
+   php artisan migrate:fresh --seed
+   ```
+   > ⚠️ `migrate:fresh` **verwijdert alle tabellen en gegevens**. Gebruik dit alleen op je eigen computer tijdens het ontwikkelen, **nooit** op een echte server.
 7. Start de server:
    ```bash
    php artisan serve
@@ -343,6 +350,35 @@ Het volledige ontwerp staat in [`docs/erd.md`](docs/erd.md) en [`docs/ERD-datamo
 
 ---
 
+### Stap 14 – Alle seeders samen en de database schoon opbouwen (26 november)
+**Gedaan**
+- In `DatabaseSeeder` alle seeders aangeroepen met `$this->call([...])`, in deze volgorde:
+  1. `AllergenSeeder`
+  2. `CategorySeeder`
+  3. `RestaurantTableSeeder`
+  4. `DishSeeder`
+- De database helemaal opnieuw opgebouwd met `php artisan migrate:fresh --seed`.
+
+**Getest**
+- Alle migrations en alle 4 seeders gaven `DONE`. ✅
+- Daarna in de database gecontroleerd:
+
+| Tabel | Resultaat | |
+|---|---|---|
+| `users` | 1 testgebruiker met rol `bediening` | ✅ |
+| `allergens` | 14 | ✅ |
+| `categories` | 4, met id 1 t/m 4 en `sort_order` 1 t/m 4 (Hoofdgerecht heeft nu goed volgnummer 2) | ✅ |
+| `restaurant_tables` | 10, met id 1 t/m 10 (geen gaten meer) | ✅ |
+| `dishes` | 9, Pizza Margherita kost nu goed € 12,50 | ✅ |
+| `allergen_dish` | 15 | ✅ |
+| `orders`, `order_items`, `payments` | leeg (die komen later via de app) | ✅ |
+
+**Waarom zo?**
+- De **volgorde** is belangrijk. `DishSeeder` zoekt categorieën en allergenen op. Als die nog niet bestaan, vindt `first()` niets (`null`) en krijg je de fout *"Attempt to read property 'id' on null"*. Daarom eerst de tabellen vullen **waar naar verwezen wordt**, net als bij de migrations.
+- Met `migrate:fresh --seed` zijn de oude testgegevens uit Tinker weg en is de database bij **iedereen in het team hetzelfde**.
+
+---
+
 ## Git-geschiedenis
 
 | Datum | Commit |
@@ -358,6 +394,7 @@ Het volledige ontwerp staat in [`docs/erd.md`](docs/erd.md) en [`docs/ERD-datamo
 | 25-11 | Seeder voor de 14 allergenen |
 | 25-11 | Seeder voor categorieën |
 | 25-11 | Seeder voor tafels |
+| 26-11 | Seeder voor gerechten, teamwijziging en overstap naar React |
 
 ---
 
@@ -368,7 +405,7 @@ Het volledige ontwerp staat in [`docs/erd.md`](docs/erd.md) en [`docs/ERD-datamo
 - [x] Seeder voor categorieën
 - [x] Seeder voor tafels
 - [x] Seeder voor gerechten (met allergenen)
-- [ ] Alle seeders samen in `DatabaseSeeder` en database schoon opbouwen
+- [x] Alle seeders samen in `DatabaseSeeder` en database schoon opbouwen
 - [ ] API-routes en controllers (JSON) – afspreken met Safa
 - [ ] Validatie van invoer
 - [ ] Inloggen voor personeel (Laravel Sanctum) en rechten per rol
