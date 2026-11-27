@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['category_id', 'name', 'description', 'price', 'image', 'is_available'])]
 class Dish extends Model
 {
+<<<<<<< HEAD
     protected function casts(): array
     {
         return [
@@ -20,10 +21,14 @@ class Dish extends Model
     }
 
     public function category(): BelongsTo
+=======
+    public function category()
+>>>>>>> main
     {
         return $this->belongsTo(Category::class);
     }
 
+<<<<<<< HEAD
     public function allergens(): BelongsToMany
     {
         return $this->belongsToMany(Allergen::class)->withTimestamps();
@@ -33,4 +38,11 @@ class Dish extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+=======
+    public function allergens()
+    {
+        return $this->belongsToMany(Allergen::class);
+    }
+    //
+>>>>>>> main
 }
